@@ -53,7 +53,8 @@ export default function ContactTable({ initialContacts }: Props) {
   }, [contacts, selectedArea, searchQuery]);
 
   const confirmedCount = useMemo(
-    () => filteredContacts.filter((contact) => contact.kakuyaku === "確約").length,
+    () =>
+      filteredContacts.filter((contact) => contact.kakuyaku === "確約").length,
     [filteredContacts],
   );
 
