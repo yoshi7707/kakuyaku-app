@@ -232,7 +232,7 @@ export default function ContactTable({ initialContacts }: Props) {
             <thead>
               <tr>
                 <th>名前</th>
-                <th>エリア</th>
+                {/* <th>エリア</th> */}
                 <th>確約状態</th>
                 <th>操作</th>
               </tr>
@@ -240,7 +240,7 @@ export default function ContactTable({ initialContacts }: Props) {
             <tbody>
               {filteredContacts.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="empty-state">
+                  <td colSpan={3} className="empty-state">
                     データがありません
                   </td>
                 </tr>
@@ -260,7 +260,7 @@ export default function ContactTable({ initialContacts }: Props) {
                         <span className="contact-name">{contact.name}</span>
                       )}
                     </td>
-                    <td>
+                    {/* <td>
                       {editId === contact.id ? (
                         <input
                           className="inline-input"
@@ -272,7 +272,7 @@ export default function ContactTable({ initialContacts }: Props) {
                       ) : (
                         <span className="area-tag">{contact.area}</span>
                       )}
-                    </td>
+                    </td> */}
                     <td>
                       <button
                         className={`kakuyaku-toggle ${
