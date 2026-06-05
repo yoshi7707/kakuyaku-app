@@ -19,6 +19,7 @@ export default function ContactTable({ initialContacts }: Props) {
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState<string | null>(null); // id being updated
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", area: "", kakuyaku: "未確約" });
@@ -67,6 +68,52 @@ export default function ContactTable({ initialContacts }: Props) {
       }
       return !current;
     });
+  };
+
+  const toggleSettings = () => {
+    setShowSettings((current) => {
+      if (current) {
+        setShowSearch(false);
+        setSearchQuery("");
+      }
+      return !current;
+    });
+  };
+
+  const downloadExcel = () => {
+    const escapeHtml = (value: string) =>
+      value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+    const header = ["名前", "エリア", "確約状態"];
+    const rows = contacts.map((contact) => [
+      contact.name,
+      contact.area,
+      contact.kakuyaku,
+    ]);
+    const tableRows = [header, ...rows]
+      .map(
+        (row) =>
+          `<tr>${row
+            .map((cell) => `<td>${escapeHtml(cell)}</td>`)
+            .join("")}</tr>`,
+      )
+      .join("");
+
+    const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table>${tableRows}</table></body></html>`;
+    const blob = new Blob([html], {
+      type: "application/vnd.ms-excel;charset=UTF-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "kakuyaku_export.xls";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Toggle kakuyaku between "未確約" and "確約"
@@ -161,24 +208,47 @@ export default function ContactTable({ initialContacts }: Props) {
             <span className="title-ja">確約管理</span>
             <span className="title-en">KAKUYAKU MANAGER</span>
           </h1>
-          <button className="btn-add" onClick={() => setShowForm((v) => !v)}>
-            {showForm ? "✕ キャンセル" : "+ 新規登録"}
-          </button>
+          <div className="header-actions">
+            <button
+              className="btn-settings"
+              aria-label="設定"
+              onClick={toggleSettings}
+            >
+              ⚙
+            </button>
+            {showSettings && (
+              <>
+                <button className="btn-download" onClick={downloadExcel}>
+                  エクセルにダウンロード
+                </button>
+                <button
+                  className="btn-add"
+                  onClick={() => setShowForm((v) => !v)}
+                >
+                  {showForm ? "✕ キャンセル" : "+ 新規登録"}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
       <div className="area-filter-bar">
-        <button className="search-toggle-button" onClick={toggleSearch}>
-          名前検索
-        </button>
-        {showSearch && (
-          <input
-            className="search-input"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="名前検索"
-          />
+        {showSettings && (
+          <>
+            <button className="search-toggle-button" onClick={toggleSearch}>
+              名前検索
+            </button>
+            {showSearch && (
+              <input
+                className="search-input"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="名前検索"
+              />
+            )}
+          </>
         )}
         <div className="area-button-row">
           <button
@@ -384,6 +454,12 @@ export default function ContactTable({ initialContacts }: Props) {
           padding: 1.25rem 0;
         }
 
+        .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
         .app-title {
           display: flex;
           flex-direction: column;
@@ -418,6 +494,67 @@ export default function ContactTable({ initialContacts }: Props) {
           cursor: pointer;
           letter-spacing: 0.05em;
           transition: background 0.15s;
+        }
+
+        .btn-download {
+          background: transparent;
+          border: 1px solid #2a2a2a;
+          color: #ccc;
+          padding: 0.55rem 1rem;
+          font-family: "Noto Sans JP", sans-serif;
+          font-weight: 700;
+          font-size: 0.85rem;
+          cursor: pointer;
+          letter-spacing: 0.05em;
+          transition: all 0.15s;
+        }
+
+        .btn-download:hover {
+          background: rgba(200, 169, 110, 0.1);
+          border-color: #c8a96e;
+          color: #c8a96e;
+        }
+
+        .btn-settings {
+          background: transparent;
+          border: 1px solid #2a2a2a;
+          color: #e8e6e0;
+          width: 2.2rem;
+          height: 2.2rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          cursor: pointer;
+          transition:
+            border-color 0.15s,
+            color 0.15s,
+            background 0.15s;
+        }
+
+        .btn-settings:hover {
+          border-color: #c8a96e;
+          color: #c8a96e;
+          background: rgba(200, 169, 110, 0.1);
+        }
+
+        .btn-download {
+          background: transparent;
+          border: 1px solid #2a2a2a;
+          color: #ccc;
+          padding: 0.55rem 1rem;
+          font-family: "Noto Sans JP", sans-serif;
+          font-weight: 700;
+          font-size: 0.85rem;
+          cursor: pointer;
+          letter-spacing: 0.05em;
+          transition: all 0.15s;
+        }
+
+        .btn-download:hover {
+          background: rgba(200, 169, 110, 0.1);
+          border-color: #c8a96e;
+          color: #c8a96e;
         }
 
         .btn-add:hover {
@@ -588,11 +725,20 @@ export default function ContactTable({ initialContacts }: Props) {
 
         .table-wrapper {
           overflow-x: auto;
+          overflow-y: auto;
+          max-height: calc(100vh - 16rem);
         }
 
         .contact-table {
           width: 100%;
           border-collapse: collapse;
+        }
+
+        .contact-table thead {
+          position: sticky;
+          top: 0;
+          z-index: 2;
+          background: #0d0d0d;
         }
 
         .contact-table thead tr {
