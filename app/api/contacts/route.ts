@@ -6,9 +6,7 @@ import { prisma } from "../../lib/prisma";
 // GET /api/contacts — fetch all contacts
 export async function GET() {
   try {
-    const contacts = await prisma.contact.findMany({
-      orderBy: { name: "asc" },
-    });
+    const contacts = await prisma.contact.findMany();
     return NextResponse.json(contacts);
   } catch (error) {
     console.error("GET /api/contacts error:", error);

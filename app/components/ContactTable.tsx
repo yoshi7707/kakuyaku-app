@@ -27,13 +27,6 @@ export default function ContactTable({ initialContacts }: Props) {
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", area: "" });
 
-  const sortContacts = (list: Contact[]) =>
-    [...list].sort(
-      (a, b) =>
-        a.area.localeCompare(b.area, "ja") ||
-        a.name.localeCompare(b.name, "ja"),
-    );
-
   const areas = useMemo(() => {
     const order = ["門前", "ポーラスター", "東"];
     const uniqueAreas = Array.from(
@@ -153,7 +146,7 @@ export default function ContactTable({ initialContacts }: Props) {
       });
       if (!res.ok) throw new Error("Create failed");
       const created: Contact = await res.json();
-      setContacts((prev) => sortContacts([...prev, created]));
+      setContacts((prev) => [...prev, created]);
       setForm({ name: "", area: "", kakuyaku: "未確約" });
       setShowForm(false);
     } catch {
@@ -191,9 +184,7 @@ export default function ContactTable({ initialContacts }: Props) {
       });
       if (!res.ok) throw new Error("Update failed");
       const updated: Contact = await res.json();
-      setContacts((prev) =>
-        sortContacts(prev.map((c) => (c.id === id ? updated : c))),
-      );
+      setContacts((prev) => prev.map((c) => (c.id === id ? updated : c)));
       setEditId(null);
     } catch {
       alert("更新に失敗しました。");
