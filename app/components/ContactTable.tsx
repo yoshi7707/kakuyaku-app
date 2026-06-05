@@ -73,40 +73,26 @@ export default function ContactTable({ initialContacts }: Props) {
     });
   };
 
-  const downloadExcel = () => {
-    const escapeHtml = (value: string) =>
-      value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+  const downloadExcel = async () => {
+    try {
+      const res = await fetch("/api/export-xlsx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contacts),
+      });
+      if (!res.ok) throw new Error("Export failed");
 
-    const header = ["名前", "エリア", "確約状態"];
-    const rows = contacts.map((contact) => [
-      contact.name,
-      contact.area,
-      contact.kakuyaku,
-    ]);
-    const tableRows = [header, ...rows]
-      .map(
-        (row) =>
-          `<tr>${row
-            .map((cell) => `<td>${escapeHtml(cell)}</td>`)
-            .join("")}</tr>`,
-      )
-      .join("");
-
-    const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table>${tableRows}</table></body></html>`;
-    const blob = new Blob([html], {
-      type: "application/vnd.ms-excel;charset=UTF-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "kakuyaku_export.xls";
-    a.click();
-    URL.revokeObjectURL(url);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "20260319行事参加者確認一覧.xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("エクセルの出力に失敗しました。");
+      console.error(error);
+    }
   };
 
   // Toggle kakuyaku between "未確約" and "確約"
