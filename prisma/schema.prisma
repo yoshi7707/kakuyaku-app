@@ -1,0 +1,19 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Contact {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  area     String
+  kakuyaku String @default("未確約") // "未確約" or "確約"
+
+  @@map("Submission")
+}
