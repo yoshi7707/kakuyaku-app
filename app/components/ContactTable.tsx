@@ -18,6 +18,7 @@ export default function ContactTable({ initialContacts }: Props) {
   const [contacts, setContacts] = useState<Contact[]>(initialContacts);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const [loading, setLoading] = useState<string | null>(null); // id being updated
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", area: "", kakuyaku: "未確約" });
@@ -51,7 +52,21 @@ export default function ContactTable({ initialContacts }: Props) {
     });
   }, [contacts, selectedArea, searchQuery]);
 
+  const confirmedCount = useMemo(
+    () => filteredContacts.filter((contact) => contact.kakuyaku === "確約").length,
+    [filteredContacts],
+  );
+
   const showActionButtons = searchQuery.trim().length > 0;
+
+  const toggleSearch = () => {
+    setShowSearch((current) => {
+      if (current) {
+        setSearchQuery("");
+      }
+      return !current;
+    });
+  };
 
   // Toggle kakuyaku between "未確約" and "確約"
   const handleToggle = async (contact: Contact) => {
@@ -152,13 +167,18 @@ export default function ContactTable({ initialContacts }: Props) {
       </header>
 
       <div className="area-filter-bar">
-        <input
-          className="search-input"
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="名前検索"
-        />
+        <button className="search-toggle-button" onClick={toggleSearch}>
+          名前検索
+        </button>
+        {showSearch && (
+          <input
+            className="search-input"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="名前検索"
+          />
+        )}
         <div className="area-button-row">
           <button
             className={`area-button ${selectedArea === null ? "active" : ""}`}
@@ -229,6 +249,7 @@ export default function ContactTable({ initialContacts }: Props) {
           <span className="count-badge">
             {selectedArea ? `${selectedArea} の件数: ` : "全エリアの件数: "}
             {filteredContacts.length} 件
+            {confirmedCount > 0 ? ` ・ 確約 ${confirmedCount} 件` : ""}
           </span>
         </div>
         <div className="table-wrapper">
@@ -484,9 +505,10 @@ export default function ContactTable({ initialContacts }: Props) {
 
         .count-badge {
           font-family: "Space Mono", monospace;
-          font-size: 0.75rem;
-          color: #555;
+          font-size: 0.95rem;
+          color: #ffffff;
           letter-spacing: 0.05em;
+          font-weight: 700;
         }
 
         .area-filter-bar {
@@ -505,7 +527,24 @@ export default function ContactTable({ initialContacts }: Props) {
           align-items: center;
         }
 
-        .area-button {
+        .search-toggle-button {
+          background: #141414;
+          border: 1px solid #2a2a2a;
+          color: #ccc;
+          padding: 0.35rem 0.75rem;
+          font-family: "Space Mono", monospace;
+          font-size: 0.78rem;
+          cursor: pointer;
+          transition: all 0.15s;
+          align-self: flex-start;
+        }
+
+        .search-toggle-button:hover {
+          border-color: #c8a96e;
+          color: #e8e6e0;
+        }
+
+        .search-input {
           background: #141414;
           border: 1px solid #2a2a2a;
           color: #ccc;
