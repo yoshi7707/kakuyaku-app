@@ -32,13 +32,13 @@ export default function ContactTable({ initialContacts }: Props) {
         a.name.localeCompare(b.name, "ja"),
     );
 
-  const areas = useMemo(
-    () =>
-      Array.from(new Set(contacts.map((contact) => contact.area))).sort(
-        (a, b) => a.localeCompare(b, "ja"),
-      ),
-    [contacts],
-  );
+  const areas = useMemo(() => {
+    const order = ["門前", "ポーラスター", "東"];
+    const uniqueAreas = Array.from(
+      new Set(contacts.map((contact) => contact.area)),
+    );
+    return order.filter((area) => uniqueAreas.includes(area));
+  }, [contacts]);
 
   const filteredContacts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -50,6 +50,8 @@ export default function ContactTable({ initialContacts }: Props) {
       return matchesArea && matchesName;
     });
   }, [contacts, selectedArea, searchQuery]);
+
+  const showActionButtons = searchQuery.trim().length > 0;
 
   // Toggle kakuyaku between "未確約" and "確約"
   const handleToggle = async (contact: Contact) => {
@@ -157,21 +159,23 @@ export default function ContactTable({ initialContacts }: Props) {
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="名前検索"
         />
-        <button
-          className={`area-button ${selectedArea === null ? "active" : ""}`}
-          onClick={() => setSelectedArea(null)}
-        >
-          全て
-        </button>
-        {areas.map((area) => (
+        <div className="area-button-row">
           <button
-            key={area}
-            className={`area-button ${selectedArea === area ? "active" : ""}`}
-            onClick={() => setSelectedArea(area)}
+            className={`area-button ${selectedArea === null ? "active" : ""}`}
+            onClick={() => setSelectedArea(null)}
           >
-            {area}
+            全て
           </button>
-        ))}
+          {areas.map((area) => (
+            <button
+              key={area}
+              className={`area-button ${selectedArea === area ? "active" : ""}`}
+              onClick={() => setSelectedArea(area)}
+            >
+              {area}
+            </button>
+          ))}
+        </div>
       </div>
 
       {showForm && (
@@ -234,13 +238,16 @@ export default function ContactTable({ initialContacts }: Props) {
                 <th>名前</th>
                 {/* <th>エリア</th> */}
                 <th>確約状態</th>
-                <th>操作</th>
+                {showActionButtons ? <th>操作</th> : null}
               </tr>
             </thead>
             <tbody>
               {filteredContacts.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="empty-state">
+                  <td
+                    colSpan={showActionButtons ? 3 : 2}
+                    className="empty-state"
+                  >
                     データがありません
                   </td>
                 </tr>
@@ -284,39 +291,41 @@ export default function ContactTable({ initialContacts }: Props) {
                         {loading === contact.id ? "…" : contact.kakuyaku}
                       </button>
                     </td>
-                    <td className="action-cell">
-                      {editId === contact.id ? (
-                        <>
-                          <button
-                            className="btn-save"
-                            onClick={() => saveEdit(contact.id)}
-                          >
-                            保存
-                          </button>
-                          <button
-                            className="btn-cancel"
-                            onClick={() => setEditId(null)}
-                          >
-                            戻る
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            className="btn-edit"
-                            onClick={() => startEdit(contact)}
-                          >
-                            編集
-                          </button>
-                          <button
-                            className="btn-delete"
-                            onClick={() => handleDelete(contact.id)}
-                          >
-                            削除
-                          </button>
-                        </>
-                      )}
-                    </td>
+                    {showActionButtons ? (
+                      <td className="action-cell">
+                        {editId === contact.id ? (
+                          <>
+                            <button
+                              className="btn-save"
+                              onClick={() => saveEdit(contact.id)}
+                            >
+                              保存
+                            </button>
+                            <button
+                              className="btn-cancel"
+                              onClick={() => setEditId(null)}
+                            >
+                              戻る
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              className="btn-edit"
+                              onClick={() => startEdit(contact)}
+                            >
+                              編集
+                            </button>
+                            <button
+                              className="btn-delete"
+                              onClick={() => handleDelete(contact.id)}
+                            >
+                              削除
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    ) : null}
                   </tr>
                 ))
               )}
@@ -485,6 +494,12 @@ export default function ContactTable({ initialContacts }: Props) {
           margin: 1rem auto 0;
           padding: 0 2rem;
           display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .area-button-row {
+          display: flex;
           flex-wrap: wrap;
           gap: 0.5rem;
           align-items: center;
@@ -518,9 +533,12 @@ export default function ContactTable({ initialContacts }: Props) {
           background: #141414;
           border: 1px solid #2a2a2a;
           color: #e8e6e0;
-          padding: 0.55rem 1rem;
+          box-sizing: border-box;
+          padding: 0.15rem 0.6rem;
+          line-height: 1;
+          height: 1.6rem;
           font-family: "Space Mono", monospace;
-          font-size: 0.85rem;
+          font-size: 0.78rem;
           outline: none;
         }
 
@@ -643,6 +661,11 @@ export default function ContactTable({ initialContacts }: Props) {
         .btn-delete:hover {
           border-color: #c85a5a;
           color: #c85a5a;
+        }
+
+        .hidden-action-button {
+          visibility: hidden;
+          pointer-events: none;
         }
 
         .btn-save:hover {
